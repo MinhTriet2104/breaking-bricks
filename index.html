@@ -24,8 +24,7 @@
     <canvas id="myCanvas" width="480" height="320"></canvas>
 </body>
 <script>
-    var color = getRandomColor();
-
+    //Get a random color for the ball
     function getRandomColor() {
         var letters = '0123456789ABCDEF';
         var color = '#';
@@ -35,37 +34,47 @@
         return color;
     }
 
-    var canvas = document.getElementById('myCanvas');
-    var ctx = canvas.getContext('2d');
-    var ballRadius = 10;
+    var color = getRandomColor(); //this variable contain the color
 
+    var canvas = document.getElementById('myCanvas'); //get the Canvas
+    var ctx = canvas.getContext('2d'); //create 2D animation canvas
+
+    var ballRadius = 10; //size of the ball
+    //s starts and y starts of a ball
     var x = canvas.width / 2;
     var y = canvas.height - 30;
 
+    //The speed of the ball
     var dx = 2;
     var dy = -2;
 
-    var speed = 0.1;
+    var speed = 0.1; //extra speed
 
+    //Initialize the paddle
     var paddleHeight = 10;
     var paddleWidth = 150;
     var paddleX = (canvas.width - paddleWidth) / 2;
 
+    //This variable check if the button is pressed or not
     var rightPressed = false;
     var leftPressed = false;
 
+    //Listen the keydown and keyup event
     document.addEventListener("keydown", keyDownHandler, false);
     document.addEventListener("keyup", keyUpHandler, false);
 
+    //Initialize the paddle the brick
     var brickRowCount = 4;
     var brickColumnCount = 11;
     var brickWidth = 30;
     var brickHeight = 20;
-    var brickPadding = 10;
+    var brickPadding = 10; //distance between brick and brick
     var brickOffsetTop = 30;
     var brickOffsetLeft = 25;
 
+    //Array of brick
     var bricks = [];
+    //Create (colummn * row) bricks
     for (var c = 0; c < brickColumnCount; c++) {
         bricks[c] = [];
         for (var r = 0; r < brickRowCount; r++) {
@@ -73,9 +82,11 @@
         }
     }
 
+    //The variable contain scores and lives
     var score = 0;
     var lives = 3;
 
+    //Change the rightPressed to true if player press the right or left arrow button
     function keyDownHandler(e) {
         if (e.key === 'Right' || e.key === 'ArrowRight') {
             rightPressed = true;
@@ -85,6 +96,7 @@
         }
     }
 
+    //Change back to false when player let down the button
     function keyUpHandler(e) {
         if (e.key === 'Right' || e.key === 'ArrowRight') {
             rightPressed = false;
@@ -94,22 +106,28 @@
         }
     }
 
+    //Draw the scores player have
     function drawScore() {
         ctx.font = '18px Arial';
         ctx.fillStyle = '#0095DD';
         ctx.fillText("Lives: " + lives, canvas.width - 65, 20);
     }
 
+    //Draw the lives left
     function drawLives() {
         ctx.font = '18px Arial';
         ctx.fillStyle = '#0095DD';
         ctx.fillText("Score: " + score, 8, 20);
     }
 
+    //Draw the brick
     function drawBricks() {
         for (var c = 0; c < brickColumnCount; c++) {
             for (var r = 0; r < brickRowCount; r++) {
+                //check if the status of brick is equal to 1 mean it not been have by the ball
                 if (bricks[c][r].status == 1) {
+                    //Then draw all the brick with the status equal to 1
+                    //This make the brick at same column and row separate
                     var brickX = (c * (brickWidth + brickPadding)) + brickOffsetLeft;
                     var brickY = (r * (brickHeight + brickPadding)) + brickOffsetTop;
                     bricks[c][r].x = brickX;
@@ -128,12 +146,14 @@
         for (var c = 0; c < brickColumnCount; c++) {
             for (var r = 0; r < brickRowCount; r++) {
                 var b = bricks[c][r];
+                //Only check the brick with status equal to 1
                 if (b.status == 1) {
+                    //Check if the ball hit the brick
                     if (x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
-                        b.status = 0;
-                        score += 10;
-                        dy = -dy;
-                        color = getRandomColor();
+                        b.status = 0; //Change the status to 0 mean it has been hit
+                        score += 10; //Increase the scores
+                        dy = -dy; //Bounce the ball
+                        color = getRandomColor(); //Change color
                         if (score === brickColumnCount * brickRowCount * 10) {
                             alert("YOU WIN, CONGRATULATION!!!");
                             document.location.reload();
@@ -145,6 +165,7 @@
         }
     }
 
+    //Draw a ball
     function drawBall() {
         ctx.beginPath();
         ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
@@ -153,6 +174,7 @@
         ctx.closePath();
     }
 
+    //Draw a paddle
     function drawPaddle() {
         ctx.beginPath();
         ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
@@ -161,6 +183,7 @@
         ctx.closePath();
     }
 
+    //Draw all the thing and animate
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawScore();
@@ -169,14 +192,17 @@
         drawBall();
         drawBricks();
         collisionDetection();
+        //Move the ball
         x += dx;
         y += dy;
+        //Move the paddle
         if (rightPressed && paddleX < canvas.width - paddleWidth) {
             paddleX += 7;
         }
         else if (leftPressed && paddleX > 0) {
             paddleX -= 7;
         }
+        //Don't let the ball out of screen make it bouncing back
         if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
             dx = -dx;
             color = getRandomColor();
@@ -185,15 +211,14 @@
         if (y + dy < ballRadius) {
             dy = -dy;
             color = getRandomColor();
-        } else if (y + dy > canvas.height - ballRadius) {
+        } else if (y + dy > canvas.height - ballRadius) { //Check if the ball hit the paddle or not
             if (x > paddleX && x < paddleX + paddleWidth) {
                 dy = -dy;
                 dx += speed;
                 dy -= speed;
             }
             else {
-                lives--;
-                setTimeout(3000);
+                lives--; //decrease the lives
                 if (!lives) {
                     alert('GAME OVER!!!');
                     document.location.reload();
